@@ -1,0 +1,26 @@
+# Starting out with Simmer
+```{r}
+library(simmer)
+
+set.seed(42)
+
+env <- simmer("SuperDuperSim")
+env
+```
+
+# Just following the getting started guide
+```{r}
+patient <- trajectory("patients' path") %>%
+  ## add an intake activity 
+  seize("nurse", 1) %>%
+  timeout(function() rnorm(1, 15)) %>%
+  release("nurse", 1) %>%
+  ## add a consultation activity
+  seize("doctor", 1) %>%
+  timeout(function() rnorm(1, 20)) %>%
+  release("doctor", 1) %>%
+  ## add a planning activity
+  seize("administration", 1) %>%
+  timeout(function() rnorm(1, 5)) %>%
+  release("administration", 1)
+```
