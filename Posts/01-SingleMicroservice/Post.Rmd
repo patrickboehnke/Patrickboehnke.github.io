@@ -1,26 +1,38 @@
-# Starting out with Simmer
+# Starting out with one microservice
 ```{r}
 library(simmer)
 
 set.seed(42)
 
-env <- simmer("SuperDuperSim")
+env <- simmer("OneMicroService")
 env
 ```
 
 # Just following the getting started guide
 ```{r}
-patient <- trajectory("patients' path") %>%
-  ## add an intake activity 
-  seize("nurse", 1) %>%
-  timeout(function() rnorm(1, 15)) %>%
-  release("nurse", 1) %>%
-  ## add a consultation activity
-  seize("doctor", 1) %>%
+request <- trajectory("request path") %>%
+  ## add a api hosting app
+  seize("app", 1) %>%
   timeout(function() rnorm(1, 20)) %>%
-  release("doctor", 1) %>%
-  ## add a planning activity
-  seize("administration", 1) %>%
+  release("app", 1) %>%
+  ## add a backing database
+  seize("database", 1) %>%
   timeout(function() rnorm(1, 5)) %>%
-  release("administration", 1)
+  release("database", 1)
+
+env %>%
+  add_resource("app", 1) %>%
+  add_resource("database", 2) %>%
+  add_generator("request", request, function() rnorm(1, 10, 2))
+
+env %>% 
+  run(80) %>% 
+  now()
+env %>% peek(3)
+
+env %>%
+  stepn() %>% # 1 step
+  print() %>%
+  stepn(3)    # 3 steps
+env %>% peek(Inf, verbose=TRUE)
 ```
