@@ -13,7 +13,7 @@ env
 request <- trajectory("request path") %>%
   ## add a api hosting app
   seize("app", 1) %>%
-  timeout(function() rnorm(1, 20)) %>%
+  timeout(function() rnorm(1, 10)) %>%
   release("app", 1) %>%
   ## add a backing database
   seize("database", 1) %>%
@@ -25,14 +25,8 @@ env %>%
   add_resource("database", 2) %>%
   add_generator("request", request, function() rnorm(1, 10, 2))
 
-env %>% 
-  run(80) %>% 
-  now()
-env %>% peek(3)
+env %>% run(until = 400)
 
-env %>%
-  stepn() %>% # 1 step
-  print() %>%
-  stepn(3)    # 3 steps
-env %>% peek(Inf, verbose=TRUE)
+env %>% get_mon_arrivals() %>%
+  transform(waiting_time = end_time - start_time - activity_time)
 ```
