@@ -1,4 +1,14 @@
-# Starting out with one microservice
+---
+title: "One Microservice - A simulation in simmer"
+author: Patrick Boehnke
+date: "December 30, 2024"
+output:
+  html_document:
+    number_sections: true
+---
+
+# Introduction
+We're going to develop a simulation of a single microservice using [simmer](https://r-simmer.org/)
 ```{r}
 library(simmer)
 

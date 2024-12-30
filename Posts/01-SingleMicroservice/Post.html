@@ -9,9 +9,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
+<meta name="author" content="Patrick Boehnke" />
 
+<meta name="date" content="2024-12-30" />
 
-<title>Post.knit</title>
+<title>One Microservice - A simulation in simmer</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -348,36 +350,128 @@ display: none;
 
 
 
+<h1 class="title toc-ignore">One Microservice - A simulation in
+simmer</h1>
+<h4 class="author">Patrick Boehnke</h4>
+<h4 class="date">December 30, 2024</h4>
 
 </div>
 
 
-<div id="starting-out-with-simmer" class="section level1">
-<h1>Starting out with Simmer</h1>
+<div id="starting-out-with-one-microservice" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Starting out with one
+microservice</h1>
 <pre class="r"><code>library(simmer)
 
 set.seed(42)
 
-env &lt;- simmer(&quot;SuperDuperSim&quot;)
+env &lt;- simmer(&quot;OneMicroService&quot;)
 env</code></pre>
-<pre><code>## simmer environment: SuperDuperSim | now: 0 | next: 
+<pre><code>## simmer environment: OneMicroService | now: 0 | next: 
 ## { Monitor: in memory }</code></pre>
 </div>
-<div id="just-following-the-getting-started-guide" class="section level1">
-<h1>Just following the getting started guide</h1>
-<pre class="r"><code>patient &lt;- trajectory(&quot;patients&#39; path&quot;) %&gt;%
-  ## add an intake activity 
-  seize(&quot;nurse&quot;, 1) %&gt;%
-  timeout(function() rnorm(1, 15)) %&gt;%
-  release(&quot;nurse&quot;, 1) %&gt;%
-  ## add a consultation activity
-  seize(&quot;doctor&quot;, 1) %&gt;%
-  timeout(function() rnorm(1, 20)) %&gt;%
-  release(&quot;doctor&quot;, 1) %&gt;%
-  ## add a planning activity
-  seize(&quot;administration&quot;, 1) %&gt;%
+<div id="just-following-the-getting-started-guide" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Just following the
+getting started guide</h1>
+<pre class="r"><code>request &lt;- trajectory(&quot;request path&quot;) %&gt;%
+  ## add a api hosting app
+  seize(&quot;app&quot;, 1) %&gt;%
+  timeout(function() rnorm(1, 10)) %&gt;%
+  release(&quot;app&quot;, 1) %&gt;%
+  ## add a backing database
+  seize(&quot;database&quot;, 1) %&gt;%
   timeout(function() rnorm(1, 5)) %&gt;%
-  release(&quot;administration&quot;, 1)</code></pre>
+  release(&quot;database&quot;, 1)
+
+env %&gt;%
+  add_resource(&quot;app&quot;, 1) %&gt;%
+  add_resource(&quot;database&quot;, 2) %&gt;%
+  add_generator(&quot;request&quot;, request, function() rnorm(1, 10, 2))</code></pre>
+<pre><code>## simmer environment: OneMicroService | now: 0 | next: 0
+## { Monitor: in memory }
+## { Resource: app | monitored: TRUE | server status: 0(1) | queue status: 0(Inf) }
+## { Resource: database | monitored: TRUE | server status: 0(2) | queue status: 0(Inf) }
+## { Source: request | monitored: 1 | n_generated: 0 }</code></pre>
+<pre class="r"><code>env %&gt;% run(until = 400)</code></pre>
+<pre><code>## simmer environment: OneMicroService | now: 400 | next: 400.64144530746
+## { Monitor: in memory }
+## { Resource: app | monitored: TRUE | server status: 1(1) | queue status: 1(Inf) }
+## { Resource: database | monitored: TRUE | server status: 0(2) | queue status: 0(Inf) }
+## { Source: request | monitored: 1 | n_generated: 38 }</code></pre>
+<pre class="r"><code>env %&gt;% get_mon_arrivals() %&gt;%
+  transform(waiting_time = end_time - start_time - activity_time)</code></pre>
+<pre><code>##         name start_time  end_time activity_time finished replication
+## 1   request0   12.74192  27.99892      15.25700     TRUE           1
+## 2   request1   21.61252  40.52774      17.42269     TRUE           1
+## 3   request2   32.87825  48.35194      14.84263     TRUE           1
+## 4   request3   45.90129  61.79907      15.89778     TRUE           1
+## 5   request4   58.51103  70.72125      12.21022     TRUE           1
+## 6   request5   67.95345  80.65299      12.27528     TRUE           1
+## 7   request6   79.22535  92.13741      12.91205     TRUE           1
+## 8   request7   91.86558 107.82298      15.95741     TRUE           1
+## 9   request8  101.52174 115.88662      12.80637     TRUE           1
+## 10  request9  115.31213 130.12759      14.81546     TRUE           1
+## 11 request10  126.23233 141.65850      15.42618     TRUE           1
+## 12 request11  137.64200 150.14053      12.49853     TRUE           1
+## 13 request12  148.65191 161.27383      12.62191     TRUE           1
+## 14 request13  156.95010 172.34720      15.39711     TRUE           1
+## 15 request14  167.36209 182.43791      15.07582     TRUE           1
+## 16 request15  175.90868 189.75097      13.75716     TRUE           1
+## 17 request16  186.77432 201.31241      14.53809     TRUE           1
+## 18 request17  198.08562 213.81827      15.73266     TRUE           1
+## 19 request18  211.23707 227.20124      15.96417     TRUE           1
+## 20 request19  221.79017 233.55603      11.63968     TRUE           1
+## 21 request20  231.96984 248.85420      16.88437     TRUE           1
+## 22 request21  242.34030 257.16022      14.60856     TRUE           1
+## 23 request22  255.13977 271.78138      16.64161     TRUE           1
+## 24 request23  267.21678 281.58377      14.36698     TRUE           1
+## 25 request24  275.13055 291.75407      14.62747     TRUE           1
+## 26 request25  286.37758 300.95557      14.57799     TRUE           1
+## 27 request26  297.91394 314.30575      16.39181     TRUE           1
+## 28 request27  305.71438 324.29795      14.87130     TRUE           1
+## 29 request28  316.23022 335.94886      16.43377     TRUE           1
+## 30 request29  323.84156 346.71078      16.58369     TRUE           1
+## 31 request30  333.47605 354.72346      13.66303     TRUE           1
+## 32 request31  346.26028 364.55345      13.96919     TRUE           1
+## 33 request32  359.04250 374.05900      14.58554     TRUE           1
+## 34 request33  366.77903 383.54845      15.53419     TRUE           1
+## 35 request34  378.08544 395.94135      16.72613     TRUE           1
+##     waiting_time
+## 1   0.000000e+00
+## 2   1.492525e+00
+## 3   6.310679e-01
+## 4   0.000000e+00
+## 5   0.000000e+00
+## 6   4.242562e-01
+## 7  -5.329071e-15
+## 8   1.065814e-14
+## 9   1.558509e+00
+## 10  7.105427e-15
+## 11  1.065814e-14
+## 12  2.309264e-14
+## 13  7.105427e-15
+## 14  3.552714e-15
+## 15 -5.329071e-15
+## 16  8.512861e-02
+## 17  1.598721e-14
+## 18  1.421085e-14
+## 19  0.000000e+00
+## 20  1.261873e-01
+## 21  3.552714e-15
+## 22  2.113626e-01
+## 23  2.842171e-14
+## 24  1.421085e-14
+## 25  1.996051e+00
+## 26  1.421085e-14
+## 27 -7.105427e-15
+## 28  3.712269e+00
+## 29  3.284866e+00
+## 30  6.285521e+00
+## 31  7.584381e+00
+## 32  4.323974e+00
+## 33  4.309641e-01
+## 34  1.235227e+00
+## 35  1.129784e+00</code></pre>
 </div>
 
 
