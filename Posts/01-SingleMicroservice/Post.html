@@ -358,9 +358,70 @@ simmer</h1>
 </div>
 
 
-<div id="starting-out-with-one-microservice" class="section level1" number="1">
-<h1><span class="header-section-number">1</span> Starting out with one
-microservice</h1>
+<div id="introduction" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p>We’re going to develop a simulation of a single microservice using <a href="https://r-simmer.org/">simmer</a>. The purpose is two fold:</p>
+<ol style="list-style-type: decimal">
+<li>I want to learn more about using simmer</li>
+<li>I want to build towards a model that incorporates Bayesian
+statistics and discrete event simulation to understand the behavior of
+microservice based systems</li>
+</ol>
+<div id="simmer" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> simmer</h2>
+<p>I want to have a simulation where I can generate events (API
+requests) using arbitrary size and arrival time distributions while
+getting information about queue times and load. In looking for a
+software package that helps me with this simulation work, I had a few
+additional requirements:</p>
+<ol style="list-style-type: decimal">
+<li>I wanted something that integrates with R or Python because this
+whole project is developed in Posit Cloud</li>
+<li>I need it to be somewhat performant because we will simulate large
+systems</li>
+<li>Has to handle arbitrary size and arrival time distributions because
+API requests are anything but normal</li>
+</ol>
+<p>Originally, I was going to use <a href="https://simpy.readthedocs.io/en/latest/">SimPy</a> since it meets
+my requirements. However, at the time of this writing the Python support
+in Posit Cloud is in beta. So I kept looking until I found <a href="https://r-simmer.org/">simmer</a>, a discrete event simulation
+package for R. So let’s give it a go and learn how to use it
+together.</p>
+</div>
+<div id="ultimate-modeling-aim" class="section level2" number="1.2">
+<h2><span class="header-section-number">1.2</span> Ultimate modeling
+aim</h2>
+<p>The goal of this article is to start down a journey of simulating
+microservice performance and reliability by combining realistic
+workloads with first principles based simulations. We will start with
+one simple microservice (this article) and gradually build up a system
+of interacting services. We can then explore what controls performance
+and reliability as well as learning how to improve our design by
+incorporating resiliency patterns.</p>
+</div>
+</div>
+<div id="defining-terms-for-our-simulation" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Defining terms for our
+simulation</h1>
+<ol style="list-style-type: decimal">
+<li>Event - this is a single API request to the service to perform a
+discrete unit of work</li>
+<li>Service - an entity that takes Events and processes them consisting
+of a Compute layer and a Data Storage layer</li>
+<li>Resource - a concept in simmer used to represent the individual
+layers of each Service</li>
+</ol>
+</div>
+<div id="setup-for-simmer" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Setup for simmer</h1>
+<div id="installation" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Installation</h2>
+<p>Installing simmer is quite easy and instructions can be found <a href="https://r-simmer.org/#installation">here</a></p>
+</div>
+<div id="setup" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Setup</h2>
+<p>To get started we will need to tell R to load simmer, set a random
+number generator seed, and start a simmer environment.</p>
 <pre class="r"><code>library(simmer)
 
 set.seed(42)
@@ -370,9 +431,10 @@ env</code></pre>
 <pre><code>## simmer environment: OneMicroService | now: 0 | next: 
 ## { Monitor: in memory }</code></pre>
 </div>
-<div id="just-following-the-getting-started-guide" class="section level1" number="2">
-<h1><span class="header-section-number">2</span> Just following the
-getting started guide</h1>
+</div>
+<div id="writing-our-simulation" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Writing our
+simulation</h1>
 <pre class="r"><code>request &lt;- trajectory(&quot;request path&quot;) %&gt;%
   ## add a api hosting app
   seize(&quot;app&quot;, 1) %&gt;%
@@ -472,6 +534,43 @@ env %&gt;%
 ## 33  4.309641e-01
 ## 34  1.235227e+00
 ## 35  1.129784e+00</code></pre>
+</div>
+<div id="computing-environment" class="section level1" number="5">
+<h1><span class="header-section-number">5</span> Computing
+Environment</h1>
+<p>Presented for readers who want to run the presented code
+themselves.</p>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 4.4.2 (2024-10-31)
+## Platform: x86_64-pc-linux-gnu
+## Running under: Ubuntu 20.04.6 LTS
+## 
+## Matrix products: default
+## BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
+## LAPACK: /usr/lib/x86_64-linux-gnu/openblas-pthread/liblapack.so.3;  LAPACK version 3.9.0
+## 
+## locale:
+##  [1] LC_CTYPE=C.UTF-8       LC_NUMERIC=C           LC_TIME=C.UTF-8       
+##  [4] LC_COLLATE=C.UTF-8     LC_MONETARY=C.UTF-8    LC_MESSAGES=C.UTF-8   
+##  [7] LC_PAPER=C.UTF-8       LC_NAME=C              LC_ADDRESS=C          
+## [10] LC_TELEPHONE=C         LC_MEASUREMENT=C.UTF-8 LC_IDENTIFICATION=C   
+## 
+## time zone: UTC
+## tzcode source: system (glibc)
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+## [1] simmer_4.4.7
+## 
+## loaded via a namespace (and not attached):
+##  [1] digest_0.6.37     R6_2.5.1          codetools_0.2-20  fastmap_1.2.0    
+##  [5] xfun_0.49         magrittr_2.0.3    cachem_1.1.0      knitr_1.49       
+##  [9] htmltools_0.5.8.1 rmarkdown_2.29    lifecycle_1.0.4   cli_3.6.3        
+## [13] sass_0.4.9        jquerylib_0.1.4   compiler_4.4.2    tools_4.4.2      
+## [17] evaluate_1.0.1    bslib_0.8.0       Rcpp_1.0.13-1     yaml_2.3.10      
+## [21] rlang_1.1.4       jsonlite_1.8.9</code></pre>
 </div>
 
 

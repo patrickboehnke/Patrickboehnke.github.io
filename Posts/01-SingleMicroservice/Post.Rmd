@@ -8,7 +8,35 @@ output:
 ---
 
 # Introduction
-We're going to develop a simulation of a single microservice using [simmer](https://r-simmer.org/)
+We're going to develop a simulation of a single microservice using [simmer](https://r-simmer.org/). The purpose is two fold:
+
+1. I want to learn more about using simmer
+2. I want to build towards a model that incorporates Bayesian statistics and discrete event simulation to understand the behavior of microservice based systems
+
+## simmer
+I want to have a simulation where I can generate events (API requests) using arbitrary size and arrival time distributions while getting information about queue times and load. In looking for a software package that helps me with this simulation work, I had a few additional requirements:
+
+1. I wanted something that integrates with R or Python because this whole project is developed in Posit Cloud
+2. I need it to be somewhat performant because we will simulate large systems
+3. Has to handle arbitrary size and arrival time distributions because API requests are anything but normal
+
+Originally, I was going to use [SimPy](https://simpy.readthedocs.io/en/latest/) since it meets my requirements. However, at the time of this writing the Python support in Posit Cloud is in beta. So I kept looking until I found [simmer](https://r-simmer.org/), a discrete event simulation package for R. So let's give it a go and learn how to use it together.
+
+## Ultimate modeling aim
+The goal of this article is to start down a journey of simulating microservice performance and reliability by combining realistic workloads with first principles based simulations. We will start with one simple microservice (this article) and gradually build up a system of interacting services. We can then explore what controls performance and reliability as well as learning how to improve our design by incorporating resiliency patterns.
+
+# Defining terms for our simulation
+1. Event - this is a single API request to the service to perform a discrete unit of work
+2. Service - an entity that takes Events and processes them consisting of a Compute layer and a Data Storage layer
+3. Resource - a concept in simmer used to represent the individual layers of each Service
+
+# Setup for simmer
+## Installation
+Installing simmer is quite easy and instructions can be found [here](https://r-simmer.org/#installation)
+
+## Setup
+To get started we will need to tell R to load simmer, set a random number generator seed, and start a simmer environment.
+
 ```{r}
 library(simmer)
 
@@ -18,7 +46,8 @@ env <- simmer("OneMicroService")
 env
 ```
 
-# Just following the getting started guide
+# Writing our simulation
+
 ```{r}
 request <- trajectory("request path") %>%
   ## add a api hosting app
@@ -39,4 +68,10 @@ env %>% run(until = 400)
 
 env %>% get_mon_arrivals() %>%
   transform(waiting_time = end_time - start_time - activity_time)
+```
+
+# Computing Environment
+Presented for readers who want to run the presented code themselves.
+```{r}
+sessionInfo()
 ```
