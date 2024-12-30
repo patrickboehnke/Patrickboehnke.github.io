@@ -47,7 +47,8 @@ env
 ```
 
 # Writing our simulation
-
+## Trajectory for our service
+Simmer defines actions/paths as trajectories. Our microservice will need a corresponding trajectory that encapsulates the compute layer and the data layer. Since we're treating each component as a resource we will need to seize it, wait, and then release it. Here we call our compute layer 'app' and the data layer 'database'.
 ```{r}
 request <- trajectory("request path") %>%
   ## add a api hosting app
@@ -58,7 +59,12 @@ request <- trajectory("request path") %>%
   seize("database", 1) %>%
   timeout(function() rnorm(1, 5)) %>%
   release("database", 1)
+```
 
+If you're wondering about the timeout statement it just uses rnorm to generate the timeout value with mean 10 or 5 for the app and database resource, respectively. The standard deviation is not specified and defaults to 1. For more details about rnorm see [this helpful page](https://www.scaler.com/topics/r-rnorm/)
+
+## Adding resources and generators
+```{r}
 env %>%
   add_resource("app", 1) %>%
   add_resource("database", 2) %>%

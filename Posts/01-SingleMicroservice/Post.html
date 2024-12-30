@@ -435,6 +435,14 @@ env</code></pre>
 <div id="writing-our-simulation" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Writing our
 simulation</h1>
+<div id="trajectory-for-our-service" class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Trajectory for our
+service</h2>
+<p>Simmer defines actions/paths as trajectories. Our microservice will
+need a corresponding trajectory that encapsulates the compute layer and
+the data layer. Since we’re treating each component as a resource we
+will need to seize it, wait, and then release it. Here we call our
+compute layer ‘app’ and the data layer ‘database’.</p>
 <pre class="r"><code>request &lt;- trajectory(&quot;request path&quot;) %&gt;%
   ## add a api hosting app
   seize(&quot;app&quot;, 1) %&gt;%
@@ -443,9 +451,16 @@ simulation</h1>
   ## add a backing database
   seize(&quot;database&quot;, 1) %&gt;%
   timeout(function() rnorm(1, 5)) %&gt;%
-  release(&quot;database&quot;, 1)
-
-env %&gt;%
+  release(&quot;database&quot;, 1)</code></pre>
+<p>If you’re wondering about the timeout statement it just uses rnorm to
+generate the timeout value with mean 10 or 5 for the app and database
+resource, respectively. The standard deviation is not specified and
+defaults to 1. For more details about rnorm see <a href="https://www.scaler.com/topics/r-rnorm/">this helpful page</a></p>
+</div>
+<div id="adding-resources-and-generators" class="section level2" number="4.2">
+<h2><span class="header-section-number">4.2</span> Adding resources and
+generators</h2>
+<pre class="r"><code>env %&gt;%
   add_resource(&quot;app&quot;, 1) %&gt;%
   add_resource(&quot;database&quot;, 2) %&gt;%
   add_generator(&quot;request&quot;, request, function() rnorm(1, 10, 2))</code></pre>
@@ -534,6 +549,7 @@ env %&gt;%
 ## 33  4.309641e-01
 ## 34  1.235227e+00
 ## 35  1.129784e+00</code></pre>
+</div>
 </div>
 <div id="computing-environment" class="section level1" number="5">
 <h1><span class="header-section-number">5</span> Computing
