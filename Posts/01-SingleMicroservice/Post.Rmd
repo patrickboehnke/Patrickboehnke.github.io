@@ -37,14 +37,13 @@ Installing simmer is quite easy and instructions can be found [here](https://r-s
 ## Setup
 To get started we will need to tell R to load simmer, set a random number generator seed, and start a simmer environment.
 
-```{r}
+```{r echo=TRUE, results='hide', message=FALSE}
 library(simmer)
 library(ggplot2)
 library(dplyr)
 set.seed(42)
 
 env <- simmer("OneMicroService")
-env
 ```
 
 # Writing our simulation
@@ -108,9 +107,52 @@ Now let's look at resource usage
 ```{r}
 get_mon_resources(env) -> mon_resource_output
 as_tibble(mon_resource_output) %>% filter(resource=="app") -> app_output
+ggplot(data=app_output) + geom_line(aes(x=time, y=system))
+```
+See that uptick at time 2000? That's because we are putting too many events into the service and it gets bogged down and can never catch up again. To demonstrate this let's rerun our simulation with a bigger gap between requests.
+
+# Rerunning with fewer requests
+Since the code is the same I won't show it again here and instead just show the plots
+
+```{r include=FALSE, echo=FALSE}
+env <- simmer("OneMicroService")
+request <- trajectory("request path") %>%
+  ## add a api hosting app
+  seize("app", 1) %>%
+  timeout(function() rnorm(1, 10)) %>%
+  release("app", 1) %>%
+  ## add a backing database
+  seize("database", 1) %>%
+  timeout(function() rnorm(1, 5)) %>%
+  release("database", 1)
+env %>%
+  add_resource("app", capacity=1, queue_size = 20) %>%
+  add_resource("database", capacity=1, queue_size = 20) %>%
+  add_generator("request", request, function() rnorm(1, 15, 2))
+env %>% run(until = 4000)
+
+```
+
+First plot of request durations:
+```{r}
+env %>%
+  get_mon_arrivals %>%
+  ggplot(aes(end_time - start_time)) +
+  geom_histogram() +
+  xlab("Request duration") +
+  ylab("Number of requests")
+```
+
+You can see that the second peak of slower requests is now gone. That's because our service is less busy. Let's look at how the resources are being used:
+```{r}
+get_mon_resources(env) -> mon_resource_output
+as_tibble(mon_resource_output) %>% filter(resource=="app") -> app_output
 app_output
 ggplot(data=app_output) + geom_line(aes(x=time, y=system))
 ```
+
+# Summary
+In this first article we implemented a simple microservice simulation in simmer and ran it to understand the behavior. We also saw what happened when our service got more requests than it can handle. In the next part we will build on our simulation by varying the load and examining the response times.
 
 # Computing Environment
 Presented for readers who want to run the presented code themselves.
