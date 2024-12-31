@@ -64,12 +64,17 @@ request <- trajectory("request path") %>%
 If you're wondering about the timeout statement it just uses rnorm to generate the timeout value with mean 10 or 5 for the app and database resource, respectively. The standard deviation is not specified and defaults to 1. For more details about rnorm see [this helpful page](https://www.scaler.com/topics/r-rnorm/)
 
 ## Adding resources and generators
+Now that our trajectory is defined, we need to add the resources to the underlying environment. We are also going to add a generator that makes requests with random gaps sampled from a normal distribution specified by N(10,2).
 ```{r}
 env %>%
   add_resource("app", 1) %>%
-  add_resource("database", 2) %>%
+  add_resource("database", 1) %>%
   add_generator("request", request, function() rnorm(1, 10, 2))
+```
 
+## Running our simmer simulation
+Now that we've added everything we need, we can start running our simulation.
+```{r}
 env %>% run(until = 400)
 
 env %>% get_mon_arrivals() %>%

@@ -460,20 +460,30 @@ defaults to 1. For more details about rnorm see <a href="https://www.scaler.com/
 <div id="adding-resources-and-generators" class="section level2" number="4.2">
 <h2><span class="header-section-number">4.2</span> Adding resources and
 generators</h2>
+<p>Now that our trajectory is defined, we need to add the resources to
+the underlying environment. We are also going to add a generator that
+makes requests with random gaps sampled from a normal distribution
+specified by N(10,2).</p>
 <pre class="r"><code>env %&gt;%
   add_resource(&quot;app&quot;, 1) %&gt;%
-  add_resource(&quot;database&quot;, 2) %&gt;%
+  add_resource(&quot;database&quot;, 1) %&gt;%
   add_generator(&quot;request&quot;, request, function() rnorm(1, 10, 2))</code></pre>
 <pre><code>## simmer environment: OneMicroService | now: 0 | next: 0
 ## { Monitor: in memory }
 ## { Resource: app | monitored: TRUE | server status: 0(1) | queue status: 0(Inf) }
-## { Resource: database | monitored: TRUE | server status: 0(2) | queue status: 0(Inf) }
+## { Resource: database | monitored: TRUE | server status: 0(1) | queue status: 0(Inf) }
 ## { Source: request | monitored: 1 | n_generated: 0 }</code></pre>
+</div>
+<div id="running-our-simmer-simulation" class="section level2" number="4.3">
+<h2><span class="header-section-number">4.3</span> Running our simmer
+simulation</h2>
+<p>Now that we’ve added everything we need, we can start running our
+simulation.</p>
 <pre class="r"><code>env %&gt;% run(until = 400)</code></pre>
 <pre><code>## simmer environment: OneMicroService | now: 400 | next: 400.64144530746
 ## { Monitor: in memory }
 ## { Resource: app | monitored: TRUE | server status: 1(1) | queue status: 1(Inf) }
-## { Resource: database | monitored: TRUE | server status: 0(2) | queue status: 0(Inf) }
+## { Resource: database | monitored: TRUE | server status: 0(1) | queue status: 0(Inf) }
 ## { Source: request | monitored: 1 | n_generated: 38 }</code></pre>
 <pre class="r"><code>env %&gt;% get_mon_arrivals() %&gt;%
   transform(waiting_time = end_time - start_time - activity_time)</code></pre>
