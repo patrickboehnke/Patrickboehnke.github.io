@@ -39,7 +39,8 @@ To get started we will need to tell R to load simmer, set a random number genera
 
 ```{r}
 library(simmer)
-
+library(ggplot2)
+library(dplyr)
 set.seed(42)
 
 env <- simmer("OneMicroService")
@@ -67,18 +68,48 @@ If you're wondering about the timeout statement it just uses rnorm to generate t
 Now that our trajectory is defined, we need to add the resources to the underlying environment. We are also going to add a generator that makes requests with random gaps sampled from a normal distribution specified by N(10,2).
 ```{r}
 env %>%
-  add_resource("app", 1) %>%
-  add_resource("database", 1) %>%
+  add_resource("app", capacity=1, queue_size = 20) %>%
+  add_resource("database", capacity=1, queue_size = 20) %>%
   add_generator("request", request, function() rnorm(1, 10, 2))
 ```
 
 ## Running our simmer simulation
-Now that we've added everything we need, we can start running our simulation.
+Now that we've added everything we need, we can start running our simulation. We're going to first run it for 400 time steps.
 ```{r}
-env %>% run(until = 400)
+env %>% run(until = 40)
+```
 
+Based on our run duration and arrival time distribution we would expect approximately 4 API requests to be processed. This is likely not enough for a reliable simulation but let's take a look at the results anyway.
+
+## Short simulation results
+To get the full output we need to use the monitor functions in simmer: 
+```{r}
 env %>% get_mon_arrivals() %>%
   transform(waiting_time = end_time - start_time - activity_time)
+```
+
+This output shows us when the request started, the request ended, the request duration, and the request wait time. Since this table is a lot, let's try out some graphs after we run the simulation a bit longer. 
+
+```{r}
+env %>% run(until = 4000)
+```
+
+First up is a histogram of request duration.
+```{r}
+env %>%
+  get_mon_arrivals %>%
+  ggplot(aes(end_time - start_time)) +
+  geom_histogram() +
+  xlab("Request duration") +
+  ylab("Number of requests")
+```
+
+Now let's look at resource usage
+```{r}
+get_mon_resources(env) -> mon_resource_output
+as_tibble(mon_resource_output) %>% filter(resource=="app") -> app_output
+app_output
+ggplot(data=app_output) + geom_line(aes(x=time, y=system))
 ```
 
 # Computing Environment
