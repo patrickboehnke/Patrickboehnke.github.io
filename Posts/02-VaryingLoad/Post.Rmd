@@ -1,0 +1,48 @@
+---
+title: "One Microservice - Varying Load"
+author: Patrick Boehnke
+date: "January 3, 2025"
+output:
+  html_document:
+    number_sections: true
+---
+
+# Introduction
+In the last post we simulated one microservice and saw a strange behavior. In our high load simulation we saw that requests were taking significantly longer to complete. To understand this behavior, I want to run a bunch of simulations while varying the time between requests.
+
+# A quick recap
+Let's quickly look at the simulation code from last time:
+```{r echo=TRUE, results='hide', message=FALSE}
+library(simmer)
+library(ggplot2)
+library(dplyr)
+set.seed(42)
+
+env <- simmer("OneMicroService")
+
+request <- trajectory("request path") %>%
+  ## add a api hosting app
+  seize("app", 1) %>%
+  timeout(function() rnorm(1, 10)) %>%
+  release("app", 1) %>%
+  ## add a backing database
+  seize("database", 1) %>%
+  timeout(function() rnorm(1, 5)) %>%
+  release("database", 1)
+
+env %>%
+  add_resource("app", capacity=1, queue_size = 20) %>%
+  add_resource("database", capacity=1, queue_size = 20) %>%
+  add_generator("request", request, function() rnorm(1, 10, 2))
+
+env %>% run(until = 4000)
+
+env %>%
+  get_mon_arrivals %>%
+  ggplot(aes(end_time - start_time)) +
+  geom_histogram() +
+  xlab("Request duration") +
+  ylab("Number of requests")
+```
+
+From the graph we can see that while most requests finish in the expected amount of time, there are many that take 2-4x longer than they should. 
