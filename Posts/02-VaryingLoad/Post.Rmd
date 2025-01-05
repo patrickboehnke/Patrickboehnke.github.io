@@ -45,4 +45,41 @@ env %>%
   ylab("Number of requests")
 ```
 
-From the graph we can see that while most requests finish in the expected amount of time, there are many that take 2-4x longer than they should. 
+From the graph we can see that while most requests finish in the expected amount of time, there are many that take 2-4x longer than they should. Let's find out how the time between requests influences the slowdown that we see. 
+
+# Varying load
+To update our simulation to vary the load we're going to need to wrap our code in a loop and iterate through the arrival time gaps. We're going to start with one minute of time between requests and increase all the way to 20. To minimize duplicate code, I'm going to first wrap our simulation in a function that takes the arrival time distribution as a variable.
+
+```{r}
+microservice <- function(timedelta){
+  env <- simmer("OneMicroService")
+
+  request <- trajectory("request path") %>%
+    ## add a api hosting app
+    seize("app", 1) %>%
+    timeout(function() rnorm(1, 10)) %>%
+    release("app", 1) %>%
+    ## add a backing database
+    seize("database", 1) %>%
+    timeout(function() rnorm(1, 5)) %>%
+    release("database", 1)
+  
+  env %>%
+    add_resource("app", capacity=1, queue_size = 20) %>%
+    add_resource("database", capacity=1, queue_size = 20) %>%
+    add_generator("request", request, function() rnorm(1, timedelta, 0.02))
+  
+  env %>% run(until = 4000)
+  
+  env %>% get_mon_arrivals %>% mutate(duration = end_time - start_time) -> results
+  return(mean(results$duration))
+}
+```
+
+Now that we have our function written, let's write a loop to find out how the duration changes as we change the duration between requests.
+
+```{r}
+for(x in 1:30){
+  print(microservice(x))
+}
+```
