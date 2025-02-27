@@ -10,4 +10,7 @@ output:
 # Introduction
 I wanted to take a detour from our theoretical build up of microservices and instead focus on a common operational challenge: was my service working normally or not? There's a variety of techniques available to us for answering this question. We could set [SLOs](https://cloud.google.com/blog/products/devops-sre/sre-fundamentals-slis-slas-and-slos) and see if our service met them or not. We could set alerts on performance or error rate and see if it fired during the time period in question. However, these methods require manual effort to tune the alert^[there are some automated/data driven tuning mechanisms availble, but they still require a lot of manual effort] and expert knowledge of the system. 
 
-This works great when you have a small number of services to monitor, but it doesn't scale to a situation where you have a dozen or more under your ownership. In that case we need a new solution, 
+This works great when you have a small number of services to monitor, but it doesn't scale to a situation where you have a dozen or more under your ownership. Once you have too many services to monitor individually, you need a way to use data to simplify the problem. What if we could build a model that automatically told us when a service was behaving normally or not.
+
+# The magic of Hidden Markov Models
+A Hidden Markov Model is a statistical model where the output is dependent on a hidden, internal state. 
