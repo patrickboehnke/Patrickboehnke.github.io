@@ -22,5 +22,9 @@ library(ggplot2)
 library(dplyr)
 set.seed(42)
 
-simulatedService <- tibble(duration = sample(seq(1:10), 100, replace = TRUE))
+simulatedService <- tibble(duration = sample(seq(1,10), 100, replace = TRUE))
+simulatedService %>% add_row(duration = sample(seq(1,100), 100, replace = TRUE))  %>% add_row(duration = sample(seq(1,10), 100, replace = TRUE)) %>% mutate(time_step = row_number()) -> simulatedService
+ggplot(data = simulatedService) + aes(x=time_step, y=duration) + geom_line()
 ```
+
+For the first 100 time steps, the service has a very low and consistent duration. However, that all changes at step 100 where all of a sudden the repsonse times become much slower and much more variable.
