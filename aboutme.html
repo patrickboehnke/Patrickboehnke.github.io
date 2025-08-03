@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Microservice Performance & Reliability Theory</title>
+    <title>About - Patrick Boehnke</title>
     <style>
         * {
             margin: 0;
@@ -58,7 +58,7 @@
             transition: background-color 0.3s ease;
         }
 
-        .nav-link:hover {
+        .nav-link:hover, .nav-link.active {
             background-color: #34495e;
         }
 
@@ -99,37 +99,82 @@
         }
 
         .main-content {
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 40px 20px;
         }
 
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 30px;
+        .about-header {
             text-align: center;
+            margin-bottom: 40px;
         }
 
-        .post-links {
-            display: grid;
-            gap: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .post-link {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            text-decoration: none;
+        .about-header h1 {
             color: #2c3e50;
-            border-left: 4px solid #3498db;
-            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
         }
 
-        .post-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        .about-header .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+
+        .about-content {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+
+        .about-section {
+            margin-bottom: 30px;
+        }
+
+        .about-section h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .about-section p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .education-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 5px;
+            border-left: 3px solid #e74c3c;
+        }
+
+        .education-item h3 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .institution {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .current-work {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .current-work h2 {
+            border-bottom: 2px solid rgba(255,255,255,0.3);
+            color: white;
         }
 
         @media (max-width: 768px) {
@@ -148,19 +193,27 @@
                 box-shadow: none;
                 background-color: #34495e;
             }
+
+            .about-header h1 {
+                font-size: 2rem;
+            }
+
+            .main-content {
+                padding: 20px 15px;
+            }
         }
     </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <a href="#" class="nav-logo">Microservice Theory</a>
+            <a href="index.html" class="nav-logo">Microservice Theory</a>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">Home</a>
+                    <a href="index.html" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a href="#" class="nav-link">Posts <span class="dropdown-arrow">â–¼</span></a>
+                    <a href="#" class="nav-link">Posts <span class="dropdown-arrow">¼</span></a>
                     <div class="dropdown-content">
                         <a href="https://patrickboehnke.github.io/Posts/01-SingleMicroservice/Post.html">One Microservice - A simulation in simmer</a>
                         <a href="https://patrickboehnke.github.io/Posts/02-VaryingLoad/Post.html">Varying Load Analysis</a>
@@ -168,28 +221,58 @@
                     </div>
                 </li>
                 <li class="nav-item">
-                    <a href="aboutme.html" class="nav-link">About</a>
+                    <a href="aboutme.html" class="nav-link active">About</a>
                 </li>
             </ul>
         </div>
     </nav>
 
     <div class="main-content">
-        <h1>Microservice Performance & Reliability Theory</h1>
-        
-        <div class="post-links">
-            <a href="https://patrickboehnke.github.io/Posts/01-SingleMicroservice/Post.html" class="post-link">
-                <strong>One Microservice - A simulation in simmer</strong><br>
-                Exploring single microservice performance through simulation
-            </a>
-            <a href="https://patrickboehnke.github.io/Posts/02-VaryingLoad/Post.html" class="post-link">
-                <strong>Varying Load Analysis</strong><br>
-                Understanding microservice behavior under different load conditions
-            </a>
-            <a href="https://patrickboehnke.github.io/Posts/03-HMMThoughts/Post.html" class="post-link">
-                <strong>HMM for Microservice Performance</strong><br>
-                Hidden Markov Models applied to microservice reliability
-            </a>
+        <div class="about-header">
+            <h1>Patrick Boehnke</h1>
+            <p class="subtitle">Geochemist & Performance Systems Researcher</p>
+        </div>
+
+        <div class="about-content">
+            <div class="about-section">
+                <h2>Background</h2>
+                <p>
+                    I am Patrick Boehnke, a scientist with a multidisciplinary background spanning geochemistry and systems performance analysis. 
+                    My academic journey has taken me through rigorous research at leading institutions, where I developed expertise in 
+                    complex system modeling and quantitative analysis.
+                </p>
+                <p>
+                    My work bridges the gap between theoretical modeling and practical applications, with a particular focus on 
+                    understanding performance characteristics and reliability patterns in both natural and engineered systems.
+                </p>
+            </div>
+
+            <div class="about-section">
+                <h2>Education & Experience</h2>
+                <div class="education-item">
+                    <h3>PhD in Geochemistry</h3>
+                    <p class="institution">University of California, Los Angeles (UCLA)</p>
+                    <p>Focused on complex system analysis and quantitative modeling approaches in geochemical processes.</p>
+                </div>
+                <div class="education-item">
+                    <h3>Postdoctoral Fellow</h3>
+                    <p class="institution">University of Chicago</p>
+                    <p>Advanced research in system performance modeling and reliability analysis methodologies.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="current-work">
+            <h2>Current Research Focus</h2>
+            <p>
+                My current work explores the intersection of performance theory and system reliability, with particular emphasis on 
+                microservice architectures and distributed systems. Through simulation and statistical modeling, I investigate 
+                how complex systems behave under varying conditions and develop frameworks for understanding their performance characteristics.
+            </p>
+            <p>
+                This research combines my background in quantitative analysis with modern system design principles, 
+                creating insights that are applicable to both theoretical understanding and practical implementation of high-performance systems.
+            </p>
         </div>
     </div>
 
@@ -229,4 +312,3 @@
     </script>
 </body>
 </html>
-
