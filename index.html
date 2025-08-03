@@ -1,13 +1,232 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Microservice Performance & Reliability Theory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .navbar {
+            background-color: #2c3e50;
+            padding: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .nav-logo {
+            color: #ecf0f1;
+            text-decoration: none;
+            font-size: 1.4rem;
+            font-weight: 600;
+            padding: 15px 0;
+        }
+
+        .nav-menu {
+            list-style: none;
+            display: flex;
+            margin: 0;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            color: #ecf0f1;
+            text-decoration: none;
+            padding: 15px 20px;
+            display: block;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background-color: #34495e;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #34495e;
+            min-width: 250px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.3s ease;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #2c3e50;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-arrow {
+            margin-left: 8px;
+            font-size: 0.8em;
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .post-links {
+            display: grid;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .post-link {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #2c3e50;
+            border-left: 4px solid #3498db;
+            transition: all 0.3s ease;
+        }
+
+        .post-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                padding: 10px 20px;
+            }
+            
+            .nav-menu {
+                margin-top: 10px;
+            }
+            
+            .dropdown-content {
+                position: static;
+                display: none;
+                box-shadow: none;
+                background-color: #34495e;
+            }
+        }
+    </style>
+</head>
 <body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">Microservice Theory</a>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link">Posts <span class="dropdown-arrow">▼</span></a>
+                    <div class="dropdown-content">
+                        <a href="https://patrickboehnke.github.io/Posts/01-SingleMicroservice/Post.html">One Microservice - A simulation in simmer</a>
+                        <a href="https://patrickboehnke.github.io/Posts/02-VaryingLoad/Post.html">Varying Load Analysis</a>
+                        <a href="https://patrickboehnke.github.io/Posts/03-HMMThoughts/Post.html">HMM for Microservice Performance</a>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">About</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
 
-<h1>Microservice Performance & Reliability Theory</h1>
+    <div class="main-content">
+        <h1>Microservice Performance & Reliability Theory</h1>
+        
+        <div class="post-links">
+            <a href="https://patrickboehnke.github.io/Posts/01-SingleMicroservice/Post.html" class="post-link">
+                <strong>One Microservice - A simulation in simmer</strong><br>
+                Exploring single microservice performance through simulation
+            </a>
+            <a href="https://patrickboehnke.github.io/Posts/02-VaryingLoad/Post.html" class="post-link">
+                <strong>Varying Load Analysis</strong><br>
+                Understanding microservice behavior under different load conditions
+            </a>
+            <a href="https://patrickboehnke.github.io/Posts/03-HMMThoughts/Post.html" class="post-link">
+                <strong>HMM for Microservice Performance</strong><br>
+                Hidden Markov Models applied to microservice reliability
+            </a>
+        </div>
+    </div>
 
-<p><a href="https://patrickboehnke.github.io/Posts/01-SingleMicroservice/Post.html">First Post</a></p>
-<p><a href="https://patrickboehnke.github.io/Posts/02-VaryingLoad/Post.html">Second Post</a></p>
-<p><a href="https://patrickboehnke.github.io/Posts/03-HMMThoughts/Post.html">Third Post: HMM for Microservice</a></p>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdowns = document.querySelectorAll('.dropdown');
+            
+            dropdowns.forEach(dropdown => {
+                const dropdownContent = dropdown.querySelector('.dropdown-content');
+                const dropdownToggle = dropdown.querySelector('.nav-link');
+                
+                dropdownToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    dropdowns.forEach(otherDropdown => {
+                        if (otherDropdown !== dropdown) {
+                            otherDropdown.querySelector('.dropdown-content').style.display = 'none';
+                        }
+                    });
+                    
+                    if (dropdownContent.style.display === 'block') {
+                        dropdownContent.style.display = 'none';
+                    } else {
+                        dropdownContent.style.display = 'block';
+                    }
+                });
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.dropdown')) {
+                    dropdowns.forEach(dropdown => {
+                        dropdown.querySelector('.dropdown-content').style.display = 'none';
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
 
