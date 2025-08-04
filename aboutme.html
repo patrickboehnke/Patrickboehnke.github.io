@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>About - Patrick Boehnke</title>
+    <meta name="description" content="Patrick Boehnke - Principal Data Scientist at Relativity specializing in statistical modeling for infrastructure optimization, system performance analysis, and data-driven platform engineering for legal technology.">
     <style>
         * {
             margin: 0;
@@ -177,6 +178,31 @@
             color: white;
         }
 
+        .skills-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .skill-category h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .skill-category ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .skill-category li {
+            padding: 3px 0;
+            border-left: 2px solid #3498db;
+            padding-left: 10px;
+            margin-bottom: 5px;
+        }
+
         @media (max-width: 768px) {
             .nav-container {
                 flex-direction: column;
@@ -200,6 +226,10 @@
 
             .main-content {
                 padding: 20px 15px;
+            }
+
+            .skills-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -236,20 +266,17 @@
     <div class="main-content">
         <div class="about-header">
             <h1>Patrick Boehnke</h1>
-            <p class="subtitle">Geochemist & Performance Systems Researcher</p>
+            <p class="subtitle">Principal Data Scientist & Performance Systems Specialist</p>
         </div>
 
         <div class="about-content">
             <div class="about-section">
                 <h2>Background</h2>
                 <p>
-                    I am Patrick Boehnke, a scientist with a multidisciplinary background spanning geochemistry and systems performance analysis. 
-                    My academic journey has taken me through rigorous research at leading institutions, where I developed expertise in 
-                    complex system modeling and quantitative analysis.
+                    I am Patrick Boehnke, a Principal Data Scientist bringing a unique multidisciplinary background that spans geochemistry, Bayesian statistics, and systems performance analysis to legal technology infrastructure. My academic journey through rigorous research at leading institutions developed deep expertise in complex system modeling and quantitative analysis—skills I now apply as a data science leader to solve infrastructure and platform challenges at Relativity.
                 </p>
                 <p>
-                    My work bridges the gap between theoretical modeling and practical applications, with a particular focus on 
-                    understanding performance characteristics and reliability patterns in both natural and engineered systems.
+                    This combination of scientific rigor and practical engineering creates a distinctive approach to platform optimization, where I leverage advanced statistical methodologies and performance theory to build reliable, scalable infrastructure solutions for legal data intelligence.
                 </p>
             </div>
 
@@ -268,16 +295,55 @@
             </div>
         </div>
 
+        <div class="about-section">
+            <h2>Technical Expertise</h2>
+            <div class="skills-grid">
+                <div class="skill-category">
+                    <h3>Data Science & Analysis</h3>
+                    <ul>
+                        <li>Statistical Modeling & Bayesian Methods</li>
+                        <li>Performance Analysis & Optimization</li>
+                        <li>System Reliability Modeling</li>
+                        <li>Quantitative Research (R, Python)</li>
+                    </ul>
+                </div>
+                <div class="skill-category">
+                    <h3>Infrastructure & Platforms</h3>
+                    <ul>
+                        <li>Kubernetes Infrastructure</li>
+                        <li>Service Mesh Architecture (Istio)</li>
+                        <li>Distributed Systems Performance</li>
+                        <li>Platform Engineering Solutions</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-section">
+            <h2>Technical Research & Leadership</h2>
+            <p>
+                As a Principal Data Scientist, I bridge the gap between theoretical performance modeling and practical infrastructure solutions. My technical writing explores the application of statistical methods to system reliability, microservice performance patterns, and data-driven approaches to platform engineering—all informed by hands-on experience leading data science initiatives in legal technology infrastructure.
+            </p>
+        </div>
+        </div>
+
+        <div class="current-work">
+            <h2>Current Role</h2>
+            <p>
+                I currently work as a <strong>Principal Data Scientist</strong> at <strong>Relativity</strong>, the leading legal data intelligence company, where I apply my expertise in quantitative analysis and systems modeling to operate compute infrastructure and design platform engineering capabilities. My role involves leveraging statistical methodologies and performance theory to optimize distributed systems, enhance Kubernetes infrastructure reliability, and develop data-driven platform solutions.
+            </p>
+            <p>
+                This position uniquely combines data science principles with infrastructure engineering, where I use statistical modeling, simulation, and quantitative analysis to solve complex platform challenges and improve system performance at enterprise scale for legal technology applications.
+            </p>
+        </div>
+
         <div class="current-work">
             <h2>Current Technical Interests</h2>
             <p>
-                My current work explores the intersection of performance theory and system reliability, with particular emphasis on 
-                microservice architectures and distributed systems. Through simulation and statistical modeling, I investigate 
-                how complex systems behave under varying conditions and develop frameworks for understanding their performance characteristics.
+                My work as a Principal Data Scientist focuses on applying statistical modeling and performance theory to infrastructure challenges. I investigate how distributed systems behave under varying conditions through simulation and quantitative analysis, developing data-driven frameworks for understanding system performance characteristics. This research directly informs platform engineering decisions and infrastructure optimization strategies at Relativity.
             </p>
             <p>
-                This research combines my background in quantitative analysis with modern system design principles, 
-                creating insights that are applicable to both theoretical understanding and practical implementation of high-performance systems.
+                I'm particularly interested in the intersection of data science methodologies and infrastructure reliability, using Bayesian approaches to model system behavior and applying statistical techniques to improve platform performance and operational efficiency.
             </p>
         </div>
     </div>
