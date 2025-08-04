@@ -1,0 +1,11 @@
+---
+title: "Debugging High CPU on Windows Kubernetes Nodes"
+author: Patrick Boehnke
+date: "August 5, 2025"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+---
