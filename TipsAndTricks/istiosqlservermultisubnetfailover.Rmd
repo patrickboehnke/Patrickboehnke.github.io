@@ -1,11 +1,82 @@
 ---
-title: "Istio Service Mesh and MS SQL Server MultiSubnetFailover - service mesh meets non-standard networking"
+title: "Istio Service Mesh and MS SQL Server Multi-Subnet Failover - service mesh meets non-standard networking"
 author: Patrick Boehnke
 date: "August 3, 2025"
-output:
-  html_document:
-    number_sections: true
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
 ---
 
 # Introduction
-[Multi-subnet failover clustering](https://learn.microsoft.com/en-us/sql/sql-server/failover-clusters/windows/sql-server-multi-subnet-clustering-sql-server?view=sql-server-ver17) is a common technique for adding high availability to a Microsoft SQL Server deployment. In general this works really well and makes use of a clever bit of DNS hackery. 
+[Multi-subnet failover clustering](https://learn.microsoft.com/en-us/sql/sql-server/failover-clusters/windows/sql-server-multi-subnet-clustering-sql-server?view=sql-server-ver17) is a common technique for adding high availability to a Microsoft SQL Server deployment. This technique requires two independent SQL Server installations: either standalone servers or clusters. One of these will be the primary deployment while the other is a secondary. To solve the challenge of clients knowing which one is primary and which is secondary, Microsoft employs an innovative DNS-based routing mechanism. Instead of relying on load balancers or other network devices to route traffic between deployments, Microsoft uses DNS-based routing to direct traffic to the primary server. The concept is straightforward: clients connect to both IP addresses simultaneously, but only the primary SQL instance responds. The secondary instance never responds to connection attempts. This approach determines the correct connection target without the need to update network devices such as load balancers.
+
+However, while this approach provides an effective solution for adding HA to SQL Server deployments, it creates a significant challenge for applications running inside of a service mesh. The service mesh is an abstraction layer that handles a lot of the networking configuration in a Kubernetes cluster. To provide these abstractions, service meshes, particularly Envoy-based implementations, make certain assumptions and can introduce unexpected behaviors. 
+
+# Network Traffic Flow - Why the conflict exists
+
+## Without a Service Mesh
+```{mermaid}
+flowchart LR
+A[Application Pod] --> B(Primary SQL Instance)
+A .-> C(Secondary SQL Instance)
+B --> A
+```
+
+As you can see in this situation everything works as expected. We have connection attempts going out to both instances, but only get a response back from the Primary SQL Instance. In this case the SQL client will use the connection that succeeded and the application will work as expected.
+
+## With a Service Mesh
+```{mermaid}
+flowchart LR
+subgraph Pod[Application Pod]
+A[Application Container] --> B[Istio Container]
+end
+B --> A
+A .-> B
+B .-> A
+B --> C(Primary SQL Instance)
+C --> B
+B .-> D(Secondary SQL Instance)
+
+classDef container fill:#90EE90
+classDef pod fill:#ffffff,stroke:#000000
+class A,B container
+class Pod pod
+```
+
+Now we have a problem in our network flow. While the Primary SQL Instance path shown by the solid arrows functions correctly, the Secondary SQL Instance path incorrectly receives a response from the Istio Container. This is because the connection between the application container and the istio container succeeded. This responses causes the SQL client driver to behave as though the Secondary SQL Instance were actually the Primary and encounter errors that are described in the [Detecting this problem](#detecting-this-problem) section.
+
+# Detecting this problem
+
+## Required pieces to have this problem
+
+1. An application running inside of a Kubernetes cluster that uses a service mesh and connects to a Microsoft SQL Server deployment
+2. A Microsoft SQL Server deployment that is configured to use multi-subnet failover to direct traffic between a primary and a secondary instance
+
+## Symptoms of the problem
+
+1. A high rate of connection failures - These error messages resemble those described [here](https://learn.microsoft.com/en-us/troubleshoot/sql/database-engine/connect/network-related-or-instance-specific-error-occurred-while-establishing-connection)
+    1. A network-related or instance-specific error occurred while establishing a connection to SQL Server. Verify that the instance name is correct and that SQL Server is configured to allow remote connections
+    2. SQL Server does not exist or access denied
+    3. A connection was successfully established with the server, but then an error occurred during the login process. (provider: SSL Provider, error: 0 - An existing connection was forcibly closed by the remote host.)
+    4. A connection was successfully established with the server, but then an error occurred during the pre-login handshake. (provider: TCP Provider, error: 0 - An existing connection was forcibly closed by the remote host.)
+2. A high rate of connections terminating abruptly
+
+# Fixes/Work arounds
+
+Different service meshes require specific workarounds for this issue.
+
+## Istio Sidecar Mode
+
+You can completely bypass the Istio Sidecar Container by following [these steps](https://istio.io/latest/docs/tasks/traffic-management/egress/egress-control/#direct-access-to-external-services). This approach configures Istio to exclude the specified CIDR range from interception, resolving the connection issue. However, this solution has limitations because it requires maintaining IP range exclusion lists or specifying which cluster-bound ranges to include. 
+
+# An (incomplete) list of service mesh configurations that (currently) don't work with SQL MultiSubnetFailover
+
+1. Istio Ambient Mesh - there is an open [Github Issue](https://github.com/istio/ztunnel/issues/1456) about this  
+2. Kuma Mesh - closed [issue](https://github.com/kumahq/kuma/issues/7275) that asked for IP-based exclusions where it was suggested that [meshpassthrough](https://developer.konghq.com/mesh/policies/meshpassthrough/) should enable this. I'm keeping this here as I've found no validation that this actually works
+
+# Conclusion
+
+Running applications in Kubernetes that require access to SQL Servers can introduce some unique challenges, especially related to the handling of the multi-subnet failover capability. Some service meshes provide solutions for these challenges, though implementation approaches vary.

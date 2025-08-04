@@ -9,7 +9,7 @@
 <meta name="author" content="Patrick Boehnke">
 <meta name="dcterms.date" content="2025-08-03">
 
-<title>Istio Service Mesh and MS SQL Server MultiSubnetFailover - service mesh meets non-standard networking</title>
+<title>Istio Service Mesh and MS SQL Server Multi-Subnet Failover - service mesh meets non-standard networking</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -35,19 +35,48 @@ ul.task-list li input[type="checkbox"] {
 <script src="istiosqlservermultisubnetfailover_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="istiosqlservermultisubnetfailover_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="istiosqlservermultisubnetfailover_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="istiosqlservermultisubnetfailover_files/libs/quarto-diagram/mermaid.min.js"></script>
+<script src="istiosqlservermultisubnetfailover_files/libs/quarto-diagram/mermaid-init.js"></script>
+<link href="istiosqlservermultisubnetfailover_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
 
 
 </head>
 
-<body class="fullcontent">
+<body>
 
-<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
-
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article toc-left">
+<div id="quarto-sidebar-toc-left" class="sidebar toc-left">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
+  <li><a href="#network-traffic-flow---why-the-conflict-exists" id="toc-network-traffic-flow---why-the-conflict-exists" class="nav-link" data-scroll-target="#network-traffic-flow---why-the-conflict-exists"><span class="header-section-number">2</span> Network Traffic Flow - Why the conflict exists</a>
+  <ul class="collapse">
+  <li><a href="#without-a-service-mesh" id="toc-without-a-service-mesh" class="nav-link" data-scroll-target="#without-a-service-mesh"><span class="header-section-number">2.1</span> Without a Service Mesh</a></li>
+  <li><a href="#with-a-service-mesh" id="toc-with-a-service-mesh" class="nav-link" data-scroll-target="#with-a-service-mesh"><span class="header-section-number">2.2</span> With a Service Mesh</a></li>
+  </ul></li>
+  <li><a href="#detecting-this-problem" id="toc-detecting-this-problem" class="nav-link" data-scroll-target="#detecting-this-problem"><span class="header-section-number">3</span> Detecting this problem</a>
+  <ul class="collapse">
+  <li><a href="#required-pieces-to-have-this-problem" id="toc-required-pieces-to-have-this-problem" class="nav-link" data-scroll-target="#required-pieces-to-have-this-problem"><span class="header-section-number">3.1</span> Required pieces to have this problem</a></li>
+  <li><a href="#symptoms-of-the-problem" id="toc-symptoms-of-the-problem" class="nav-link" data-scroll-target="#symptoms-of-the-problem"><span class="header-section-number">3.2</span> Symptoms of the problem</a></li>
+  </ul></li>
+  <li><a href="#fixeswork-arounds" id="toc-fixeswork-arounds" class="nav-link" data-scroll-target="#fixeswork-arounds"><span class="header-section-number">4</span> Fixes/Work arounds</a>
+  <ul class="collapse">
+  <li><a href="#istio-sidecar-mode" id="toc-istio-sidecar-mode" class="nav-link" data-scroll-target="#istio-sidecar-mode"><span class="header-section-number">4.1</span> Istio Sidecar Mode</a></li>
+  </ul></li>
+  <li><a href="#an-incomplete-list-of-service-mesh-configurations-that-currently-dont-work-with-sql-multisubnetfailover" id="toc-an-incomplete-list-of-service-mesh-configurations-that-currently-dont-work-with-sql-multisubnetfailover" class="nav-link" data-scroll-target="#an-incomplete-list-of-service-mesh-configurations-that-currently-dont-work-with-sql-multisubnetfailover"><span class="header-section-number">5</span> An (incomplete) list of service mesh configurations that (currently) don’t work with SQL MultiSubnetFailover</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">6</span> Conclusion</a></li>
+  </ul>
+</nav>
+</div>
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+</div>
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Istio Service Mesh and MS SQL Server MultiSubnetFailover - service mesh meets non-standard networking</h1>
+<h1 class="title">Istio Service Mesh and MS SQL Server Multi-Subnet Failover - service mesh meets non-standard networking</h1>
 </div>
 
 
@@ -76,9 +105,105 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="introduction" class="level1">
-<h1>Introduction</h1>
-<p><a href="https://learn.microsoft.com/en-us/sql/sql-server/failover-clusters/windows/sql-server-multi-subnet-clustering-sql-server?view=sql-server-ver17">Multi-subnet failover clustering</a> is a common technique for adding high availability to a Microsoft SQL Server deployment. In general this works really well and makes use of a clever bit of DNS hackery.</p>
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p><a href="https://learn.microsoft.com/en-us/sql/sql-server/failover-clusters/windows/sql-server-multi-subnet-clustering-sql-server?view=sql-server-ver17">Multi-subnet failover clustering</a> is a common technique for adding high availability to a Microsoft SQL Server deployment. This technique requires two independent SQL Server installations: either standalone servers or clusters. One of these will be the primary deployment while the other is a secondary. To solve the challenge of clients knowing which one is primary and which is secondary, Microsoft employs an innovative DNS-based routing mechanism. Instead of relying on load balancers or other network devices to route traffic between deployments, Microsoft uses DNS-based routing to direct traffic to the primary server. The concept is straightforward: clients connect to both IP addresses simultaneously, but only the primary SQL instance responds. The secondary instance never responds to connection attempts. This approach determines the correct connection target without the need to update network devices such as load balancers.</p>
+<p>However, while this approach provides an effective solution for adding HA to SQL Server deployments, it creates a significant challenge for applications running inside of a service mesh. The service mesh is an abstraction layer that handles a lot of the networking configuration in a Kubernetes cluster. To provide these abstractions, service meshes, particularly Envoy-based implementations, make certain assumptions and can introduce unexpected behaviors.</p>
+</section>
+<section id="network-traffic-flow---why-the-conflict-exists" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Network Traffic Flow - Why the conflict exists</h1>
+<section id="without-a-service-mesh" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="without-a-service-mesh"><span class="header-section-number">2.1</span> Without a Service Mesh</h2>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+A[Application Pod] --&gt; B(Primary SQL Instance)
+A .-&gt; C(Secondary SQL Instance)
+B --&gt; A
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>As you can see in this situation everything works as expected. We have connection attempts going out to both instances, but only get a response back from the Primary SQL Instance. In this case the SQL client will use the connection that succeeded and the application will work as expected.</p>
+</section>
+<section id="with-a-service-mesh" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="with-a-service-mesh"><span class="header-section-number">2.2</span> With a Service Mesh</h2>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+subgraph Pod[Application Pod]
+A[Application Container] --&gt; B[Istio Container]
+end
+B --&gt; A
+A .-&gt; B
+B .-&gt; A
+B --&gt; C(Primary SQL Instance)
+C --&gt; B
+B .-&gt; D(Secondary SQL Instance)
+
+classDef container fill:#90EE90
+classDef pod fill:#ffffff,stroke:#000000
+class A,B container
+class Pod pod
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>Now we have a problem in our network flow. While the Primary SQL Instance path shown by the solid arrows functions correctly, the Secondary SQL Instance path incorrectly receives a response from the Istio Container. This is because the connection between the application container and the istio container succeeded. This responses causes the SQL client driver to behave as though the Secondary SQL Instance were actually the Primary and encounter errors that are described in the <a href="#detecting-this-problem">Detecting this problem</a> section.</p>
+</section>
+</section>
+<section id="detecting-this-problem" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Detecting this problem</h1>
+<section id="required-pieces-to-have-this-problem" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="required-pieces-to-have-this-problem"><span class="header-section-number">3.1</span> Required pieces to have this problem</h2>
+<ol type="1">
+<li>An application running inside of a Kubernetes cluster that uses a service mesh and connects to a Microsoft SQL Server deployment</li>
+<li>A Microsoft SQL Server deployment that is configured to use multi-subnet failover to direct traffic between a primary and a secondary instance</li>
+</ol>
+</section>
+<section id="symptoms-of-the-problem" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="symptoms-of-the-problem"><span class="header-section-number">3.2</span> Symptoms of the problem</h2>
+<ol type="1">
+<li>A high rate of connection failures - These error messages resemble those described <a href="https://learn.microsoft.com/en-us/troubleshoot/sql/database-engine/connect/network-related-or-instance-specific-error-occurred-while-establishing-connection">here</a>
+<ol type="1">
+<li>A network-related or instance-specific error occurred while establishing a connection to SQL Server. Verify that the instance name is correct and that SQL Server is configured to allow remote connections</li>
+<li>SQL Server does not exist or access denied</li>
+<li>A connection was successfully established with the server, but then an error occurred during the login process. (provider: SSL Provider, error: 0 - An existing connection was forcibly closed by the remote host.)</li>
+<li>A connection was successfully established with the server, but then an error occurred during the pre-login handshake. (provider: TCP Provider, error: 0 - An existing connection was forcibly closed by the remote host.)</li>
+</ol></li>
+<li>A high rate of connections terminating abruptly</li>
+</ol>
+</section>
+</section>
+<section id="fixeswork-arounds" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Fixes/Work arounds</h1>
+<p>Different service meshes require specific workarounds for this issue.</p>
+<section id="istio-sidecar-mode" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="istio-sidecar-mode"><span class="header-section-number">4.1</span> Istio Sidecar Mode</h2>
+<p>You can completely bypass the Istio Sidecar Container by following <a href="https://istio.io/latest/docs/tasks/traffic-management/egress/egress-control/#direct-access-to-external-services">these steps</a>. This approach configures Istio to exclude the specified CIDR range from interception, resolving the connection issue. However, this solution has limitations because it requires maintaining IP range exclusion lists or specifying which cluster-bound ranges to include.</p>
+</section>
+</section>
+<section id="an-incomplete-list-of-service-mesh-configurations-that-currently-dont-work-with-sql-multisubnetfailover" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> An (incomplete) list of service mesh configurations that (currently) don’t work with SQL MultiSubnetFailover</h1>
+<ol type="1">
+<li>Istio Ambient Mesh - there is an open <a href="https://github.com/istio/ztunnel/issues/1456">Github Issue</a> about this<br>
+</li>
+<li>Kuma Mesh - closed <a href="https://github.com/kumahq/kuma/issues/7275">issue</a> that asked for IP-based exclusions where it was suggested that <a href="https://developer.konghq.com/mesh/policies/meshpassthrough/">meshpassthrough</a> should enable this. I’m keeping this here as I’ve found no validation that this actually works</li>
+</ol>
+</section>
+<section id="conclusion" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Conclusion</h1>
+<p>Running applications in Kubernetes that require access to SQL Servers can introduce some unique challenges, especially related to the handling of the multi-subnet failover capability. Some service meshes provide solutions for these challenges, though implementation approaches vary.</p>
 </section>
 
 </main>
